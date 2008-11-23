@@ -38,9 +38,15 @@ import org.openscience.cdk.smiles.SmilesParser;
 
 public class Main extends JPanel {
     
+    // these are all related, so must be changed together
+    public static final int STROKE_WIDTH = 2;
+    public static final int WIDTH = 200;
+    public static final int HEIGHT = 200;
+    public static final int FONT_SIZE = 16;
+    public static final double SCALE = 20.0;
+
     public class BlackboardMonitor implements IRenderingVisitor {
         
-        public static final int STROKE_WIDTH = 3;
         public Graphics2D g;
         private final double s;
         private final double dx;
@@ -62,7 +68,7 @@ public class Main extends JPanel {
             this.g.setStroke(stroke);
             
             this.g.setPaint(this.createPaint());
-            this.g.setFont(new Font("ARIAL", Font.PLAIN, 20));
+            this.g.setFont(new Font("ARIAL", Font.PLAIN, FONT_SIZE));
         }
         
         private Paint createPaint() {
@@ -162,12 +168,9 @@ public class Main extends JPanel {
         
     }
 
-    public String smiles = "C1(C(N)C)C=C(O)C(C)C=C1";
+    public String smiles = "C1(C(N)C)C=C(O)C(C)C(Cl)=C1C2C=C(O)CC2";
     private BasicGenerator generator;
     private IAtomContainer ac;
-    private static final int WIDTH = 400;
-    private static final int HEIGHT = 400;
-    
     public Main() {
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setBackground(Color.BLACK);
@@ -192,7 +195,7 @@ public class Main extends JPanel {
             Point2d c = GeometryTools.get2DCenter(ac);
             IRenderingElement diagram = generator.generate(ac);
             Point2d d = new Point2d((double)WIDTH/2, (double)HEIGHT/2);
-            diagram.accept(new BlackboardMonitor((Graphics2D) g, 50.0d, d, c));
+            diagram.accept(new BlackboardMonitor((Graphics2D) g, SCALE, d, c));
         }
     }
 
