@@ -1,0 +1,7 @@
+# library directories will be install-specific
+library/*
+
+# eclipse stuff
+experiments/.metadata/
+.project
+.classpath
