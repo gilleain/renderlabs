@@ -5,3 +5,4 @@ library/*
 experiments/.metadata/
 .project
 .classpath
+bin/
