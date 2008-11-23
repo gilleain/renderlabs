@@ -1,0 +1,10 @@
+Renderlabs is a meta-project of small experimental mini-projects called 'experiments'.
+
+The organisation of the project is this:
+
+- experiments/ = the mini project root directory
+- images/      = those images necessary for the meta project
+- src/         = source files of the meta project
+- library/     = other projects that the experiments build on
+
+each of the experiments should be organised as if they were a stand-alone project, so thatthey can be downloaded separately.
