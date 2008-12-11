@@ -4,7 +4,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -21,48 +20,38 @@ import javax.swing.JPanel;
 import javax.vecmath.Point2d;
 
 import org.openscience.cdk.DefaultChemObjectBuilder;
-import org.openscience.cdk.geometry.GeometryTools;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.layout.StructureDiagramGenerator;
 import org.openscience.cdk.renderer.Renderer2DModel;
 import org.openscience.cdk.renderer.elements.ElementGroup;
 import org.openscience.cdk.renderer.elements.IRenderingElement;
-import org.openscience.cdk.renderer.elements.IRenderingVisitor;
 import org.openscience.cdk.renderer.elements.LineElement;
 import org.openscience.cdk.renderer.elements.OvalElement;
 import org.openscience.cdk.renderer.elements.TextElement;
 import org.openscience.cdk.renderer.elements.WedgeLineElement;
 import org.openscience.cdk.renderer.generators.BasicGenerator;
+import org.openscience.cdk.renderer.visitor.AbstractAWTRenderingVisitor;
 import org.openscience.cdk.smiles.SmilesParser;
 
+@SuppressWarnings("serial")
 public class Main extends JPanel {
     
     // these are all related, so must be changed together
-    public static final int STROKE_WIDTH = 2;
-    public static final int WIDTH = 200;
-    public static final int HEIGHT = 200;
-    public static final int FONT_SIZE = 16;
-    public static final double SCALE = 20.0;
+    public static final int STROKE_WIDTH = 5;
+    public static final int WIDTH = 500;
+    public static final int HEIGHT = 500;
+    public static final int FONT_SIZE = 25;
+    public static final double SCALE = 50.0;
 
-    public class BlackboardMonitor implements IRenderingVisitor {
-        
-        public Graphics2D g;
-        private final double s;
-        private final double dx;
-        private final double dy;
-        private final double cx;
-        private final double cy;
+    public class BlackboardMonitor extends AbstractAWTRenderingVisitor {
         
         private final Random r = new Random();
+        private final Graphics2D g;
         
-        public BlackboardMonitor(Graphics2D g, double s, Point2d displayC, Point2d modelC) {
+        public BlackboardMonitor(Graphics2D g, double s, Point2d c) {
+            super(s, c.x, c.y);
             this.g = g;
-            this.s = s;
-            this.dx = displayC.x;
-            this.dy = displayC.y;
-            this.cx = modelC.x;
-            this.cy = modelC.y;
             
             Stroke stroke = new BasicStroke(STROKE_WIDTH);
             this.g.setStroke(stroke);
@@ -101,16 +90,6 @@ public class Main extends JPanel {
             return bi;
         }
         
-        private int tX(double x) {
-//            return (int) ((this.s * (x - this.cx)) + this.dx);
-            return (int) ((this.s * x) + this.dx);
-        }
-        
-        private int tY(double y) {
-//            return (int) ((this.s * (y - this.cy)) + this.dy);
-            return (int) ((this.s * y) + this.dy);
-        }
-
         public void visitElementGroup(ElementGroup group) {
             group.visitChildren(this);
         }
@@ -124,33 +103,6 @@ public class Main extends JPanel {
             
         }
         
-        private Rectangle2D getTextBounds(TextElement textElement, Graphics2D g) {
-            FontMetrics fm = g.getFontMetrics();
-            Rectangle2D bounds = fm.getStringBounds(textElement.text, g);
-
-            double widthPad = 3;
-            double heightPad = 1;
-
-            double w = bounds.getWidth() + widthPad;
-            double h = bounds.getHeight() + heightPad;
-            return new Rectangle2D.Double(
-                    tX(textElement.x) - w / 2,
-                    tY(textElement.y) - h / 2,
-                    w,
-                    h);
-        }
-
-        private Point getTextBasePoint(TextElement textElement, Graphics2D g) {
-            FontMetrics fm = g.getFontMetrics();
-            Rectangle2D stringBounds = fm.getStringBounds(textElement.text, g);
-            int baseX = (int) (tX(textElement.x) - (stringBounds.getWidth() / 2));
-
-            // correct the baseline by the ascent
-            int baseY = (int) (tY(textElement.y) +
-                    (fm.getAscent() - stringBounds.getHeight() / 2));
-            return new Point(baseX, baseY);
-        }
-
         public void visitText(TextElement text) {
             Point p = this.getTextBasePoint(text, g);
             Rectangle2D textBounds = this.getTextBounds(text, g);
@@ -168,7 +120,7 @@ public class Main extends JPanel {
         
     }
 
-    public String smiles = "C1(C(N)C)C=C(O)C(C)C(Cl)=C1C2C=C(O)CC2";
+    public String smiles = "C1(C2C=CC=C2)C(C)=C(F)C(C2C=CC=C2)=C(C)C1(F)";
     private BasicGenerator generator;
     private IAtomContainer ac;
     public Main() {
@@ -192,10 +144,9 @@ public class Main extends JPanel {
     public void paint(Graphics g) {
         super.paint(g);
         if (ac != null) {
-            Point2d c = GeometryTools.get2DCenter(ac);
             IRenderingElement diagram = generator.generate(ac);
             Point2d d = new Point2d((double)WIDTH/2, (double)HEIGHT/2);
-            diagram.accept(new BlackboardMonitor((Graphics2D) g, SCALE, d, c));
+            diagram.accept(new BlackboardMonitor((Graphics2D) g, SCALE, d));
         }
     }
 
